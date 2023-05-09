@@ -1,42 +1,55 @@
-import { Session, SessionOptions } from "next-auth";
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
-interface SessionResult {
-  session: SessionOptions;
-  user: {
-    id: number;
-    name: string;
-    email: string;
+import { connectToDB } from "@/utils/database";
+import User from "@/models/user";
+import { Session } from "next-auth";
+import { AdapterUser } from "next-auth/adapters";
+interface CustomSession extends Session {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    id?: string | null;
   };
 }
-interface SessionParams {
-  session: Session;
-}
-
-const clientId = process.env.GOOGLE_ID || "";
-const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
 
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-      clientId,
-      clientSecret,
+      clientId: process.env.GOOGLE_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
-  // async session({ session }) {
-  //   return {
-  //     session: session,
-  //     user: { id: 1, name: "John Doe", email: "john.doe@example.com" },
-  //   };
-  // },
-  // async signIn({ profile }
-  //   try {
+  callbacks: {
+    async session({ session }: { session: CustomSession }) {
+      const sessionUser = await User.findOne({ email: session.user?.email });
 
-  //   } catch (error) {
+      session!.user!.id = sessionUser?._id.toString();
 
-  //   }) {
-  //   return;
-  // },
+      return session;
+    },
+    async signIn({ profile }) {
+      try {
+        await connectToDB();
+        // cek user exists
+        const isUserExits = await User.findOne({ email: profile?.email });
+
+        //create new user
+        if (!isUserExits) {
+          await User.create({
+            email: profile?.email,
+            username: profile?.name?.replace(" ", "").toLowerCase(),
+            image: profile?.image,
+          });
+        }
+
+        return true;
+      } catch (error) {
+        console.log(error);
+        return false;
+      }
+    },
+  },
 });
 
 export { handler as GET, handler as POST };

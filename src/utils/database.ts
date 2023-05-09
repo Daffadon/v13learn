@@ -4,7 +4,7 @@ import { connected } from "process";
 let isConnected = false;
 export const connectToDB = async () => {
   const option = {
-    dbName: "",
+    dbName: "try-to-code",
     useUnifiedTopology: true,
     useNewUrlParser: true,
   };
@@ -17,7 +17,7 @@ export const connectToDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI || "", option);
     isConnected = true;
-    console.log("connected");
+    console.log("connected with mongodb");
   } catch (error) {
     console.log(error);
   }
