@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 const page = () => {
   const router = useRouter();
 
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const [provider, setProvider] = useState<Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null>(null);
 

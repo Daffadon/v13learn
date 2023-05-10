@@ -2,7 +2,7 @@ import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "@/utils/database";
 import User from "@/models/user";
-import { Session } from "next-auth";
+import { Profile, Session } from "next-auth";
 interface CustomSession extends Session {
   user?: {
     name?: string | null;
@@ -10,6 +10,9 @@ interface CustomSession extends Session {
     image?: string | null;
     id?: string | null;
   };
+}
+interface customProfile extends Profile {
+  picture?: string;
 }
 const handler = NextAuth({
   session: {
@@ -33,7 +36,7 @@ const handler = NextAuth({
 
       return session;
     },
-    async signIn({ profile }) {
+    async signIn({ profile }: { profile?: customProfile }) {
       try {
         await connectToDB();
         // cek user exists
@@ -42,8 +45,9 @@ const handler = NextAuth({
         if (!isUserExits) {
           await User.create({
             email: profile?.email,
-            username: profile?.name?.replace(" ", "").toLowerCase(),
+            username: profile?.name?.replaceAll(" ", "").toLowerCase(),
             image: profile?.image,
+            picture: profile?.picture,
           });
         }
         return true;
