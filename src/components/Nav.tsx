@@ -3,32 +3,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  signIn,
   signOut,
   useSession,
-  getProviders,
-  LiteralUnion,
-  ClientSafeProvider,
 } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { BuiltInProviderType } from "next-auth/providers";
+import { useState } from "react";
 const Nav = () => {
   const { data: session } = useSession();
 
-  const [provider, setProvider] = useState<Record<
-    LiteralUnion<BuiltInProviderType, string>,
-    ClientSafeProvider
-  > | null>(null);
-
   const [toggleDropdown, setToggleDropdown] = useState<boolean>(false)
 
-  useEffect(() => {
-    const setProviders = async () => {
-      const response = await getProviders();
-      setProvider(response);
-    };
-    setProviders();
-  }, []);
   return (
     <nav className="flex-between w-full mb-16 pt-3">
       <Link href={"/"} className="flex gap-2 flex-center">
@@ -52,7 +35,7 @@ const Nav = () => {
             <button
               type="button"
               onClick={() => {
-                signOut;
+                signOut();
               }}
               className="outline_btn"
             >
@@ -70,19 +53,11 @@ const Nav = () => {
           </div>
         ) : (
           <>
-            {provider &&
-              Object.values(provider).map((prov) => (
-                <button
-                  type="button"
-                  key={prov.name}
-                  onClick={() => {
-                    signIn(prov.id);
-                  }}
-                  className="black_btn"
-                >
-                  Sign In
-                </button>
-              ))}
+            <Link href={'/signin'}>
+              <button type="button" className="black_btn">
+                Sign In
+              </button>
+            </Link>
           </>
         )}
       </div>
@@ -127,19 +102,6 @@ const Nav = () => {
           </div>
         ) : (
           <>
-            {provider &&
-              Object.values(provider).map((prov) => (
-                <button
-                  type="button"
-                  key={prov.name}
-                  onClick={() => {
-                    signIn(prov.id);
-                  }}
-                  className="black_btn"
-                >
-                  Sign In
-                </button>
-              ))}
           </>
         )}
       </div>

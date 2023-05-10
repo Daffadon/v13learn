@@ -3,7 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "@/utils/database";
 import User from "@/models/user";
 import { Session } from "next-auth";
-import { AdapterUser } from "next-auth/adapters";
 interface CustomSession extends Session {
   user?: {
     name?: string | null;
@@ -12,8 +11,14 @@ interface CustomSession extends Session {
     id?: string | null;
   };
 }
-
 const handler = NextAuth({
+  session: {
+    maxAge: 30 * 60,
+  },
+  pages: {
+    signIn: "/signin",
+    error: "/",
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID || "",
@@ -33,7 +38,6 @@ const handler = NextAuth({
         await connectToDB();
         // cek user exists
         const isUserExits = await User.findOne({ email: profile?.email });
-
         //create new user
         if (!isUserExits) {
           await User.create({
@@ -42,10 +46,8 @@ const handler = NextAuth({
             image: profile?.image,
           });
         }
-
         return true;
       } catch (error) {
-        console.log(error);
         return false;
       }
     },
